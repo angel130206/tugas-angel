@@ -1,0 +1,25 @@
+{
+  "name": "Agenda Tugas",
+  "short_name": "Agenda Tugas",
+  "description": "Papan tugas kuliah/sekolah dengan pengingat deadline",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#3B2E67",
+  "theme_color": "#3B2E67",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

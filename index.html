@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Tugas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3B2E67">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#3B2E67;
+    --board-deep:#2E2350;
+    --cream:#FBF6EC;
+    --ink:#2B2140;
+    --ink-soft:#6B6180;
+
+    --yellow:#FFD65C;    --yellow-deep:#8A5A00;
+    --mint:#7BE8C4;      --mint-deep:#0E6B4C;
+    --orange:#FF9E58;    --orange-deep:#8A3D00;
+    --pink:#FF93B4;      --pink-deep:#8A0E42;
+
+    --red:#FF5D5D;
+    --gold:#FFC24B;
+    --green:#3FD08A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(rgba(255,255,255,0.045) 1.6px, transparent 1.6px),
+      radial-gradient(rgba(255,255,255,0.03) 1.6px, transparent 1.6px),
+      linear-gradient(160deg, var(--board), var(--board-deep));
+    background-size: 26px 26px, 26px 26px, cover;
+    background-position: 0 0, 13px 13px, 0 0;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.playful{font-family:'Baloo 2', sans-serif;}
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:38px 30px 70px; }
+
+  /* ---- Auth screen ---- */
+  #auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .auth-card{
+    background:var(--cream);
+    width:100%;
+    max-width:380px;
+    border-radius:18px;
+    padding:32px 28px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+    text-align:center;
+  }
+  .auth-pin{
+    width:18px; height:18px; margin:0 auto 14px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FF8A8A, #D6432F 70%);
+    box-shadow:0 3px 5px rgba(0,0,0,0.3);
+  }
+  .auth-card h2{ font-size:22px; margin:0 0 4px; color:var(--ink); }
+  .auth-card .sub{ font-size:12.5px; color:var(--ink-soft); margin:0 0 20px; }
+  .auth-card .field{ margin-bottom:12px; text-align:left; }
+  .auth-card .field label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+  .auth-card input{
+    width:100%;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;
+    padding:10px 11px;
+    border:1.5px solid rgba(43,33,64,0.2);
+    border-radius:9px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .auth-card input:focus{ outline:none; border-color:var(--orange); }
+  .auth-error{
+    font-size:12px;
+    color:#B3261E;
+    background:#FBE4E1;
+    border-radius:8px;
+    padding:8px 10px;
+    margin-bottom:12px;
+    display:none;
+    text-align:left;
+  }
+  .btn-auth{
+    width:100%;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    background:var(--yellow);
+    color:#4A3300;
+    border:none;
+    padding:12px;
+    border-radius:11px;
+    cursor:pointer;
+    box-shadow:0 4px 0 #C79A2E;
+    margin-top:6px;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .btn-auth:hover{ transform:translateY(2px); box-shadow:0 2px 0 #C79A2E; }
+  .btn-auth:disabled{ opacity:0.6; cursor:not-allowed; }
+  .auth-toggle{
+    margin-top:16px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .auth-toggle button{
+    background:none; border:none; cursor:pointer;
+    color:var(--orange-deep); font-weight:600; font-size:12.5px;
+    text-decoration:underline;
+  }
+
+  #app-screen{ display:none; }
+
+  /* ---- Header ---- */
+  .header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:26px;
+  }
+  .header h1{
+    font-size:34px;
+    font-weight:800;
+    color:var(--cream);
+    margin:0 0 4px;
+    letter-spacing:0.3px;
+  }
+  .header .today{
+    font-size:13px;
+    color:rgba(251,246,236,0.65);
+    margin:0;
+  }
+  .header .user-email{
+    font-size:11.5px;
+    color:rgba(251,246,236,0.5);
+    margin:2px 0 0;
+  }
+  .header-actions{ display:flex; align-items:flex-start; gap:10px; }
+  .btn-add{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    background:var(--yellow);
+    color:#4A3300;
+    border:none;
+    padding:13px 22px;
+    border-radius:12px;
+    cursor:pointer;
+    box-shadow:0 4px 0 #C79A2E, 0 4px 14px rgba(0,0,0,0.25);
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .btn-add:hover{ transform:translateY(2px); box-shadow:0 2px 0 #C79A2E, 0 2px 8px rgba(0,0,0,0.2); }
+  .btn-add:active{ transform:translateY(4px); box-shadow:none; }
+  .btn-logout{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:12.5px;
+    font-weight:500;
+    background:rgba(251,246,236,0.12);
+    color:var(--cream);
+    border:1.5px solid rgba(251,246,236,0.3);
+    padding:12px 16px;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  .btn-logout:hover{ background:rgba(251,246,236,0.2); }
+
+  /* ---- Tape tabs ---- */
+  .tape-row{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .tape{
+    position:relative;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:10px 18px 11px;
+    border:none;
+    cursor:pointer;
+    color:var(--ink);
+    background:var(--cream);
+    border-radius:5px;
+    transform:rotate(-1.5deg);
+    box-shadow:0 3px 6px rgba(0,0,0,0.22);
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    opacity:0.85;
+  }
+  .tape:nth-child(2n){ transform:rotate(1.4deg); }
+  .tape:nth-child(3n){ transform:rotate(-0.6deg); }
+  .tape:hover{ opacity:1; }
+  .tape[data-kat="Tugas Biasa"]{ background:var(--yellow); }
+  .tape[data-kat="Proyek"]{ background:var(--mint); }
+  .tape[data-kat="UTS"]{ background:var(--orange); }
+  .tape[data-kat="UAS"]{ background:var(--pink); }
+  .tape .count{ font-size:11px; font-weight:700; opacity:0.65; margin-left:5px; }
+  .tape.active{
+    opacity:1;
+    transform:rotate(0deg) scale(1.08) translateY(-2px);
+    box-shadow:0 6px 12px rgba(0,0,0,0.3);
+  }
+  .tape.active::after{
+    content:'';
+    position:absolute;
+    top:-6px; left:50%;
+    width:12px; height:12px;
+    margin-left:-6px;
+    background:#D6432F;
+    border-radius:50%;
+    box-shadow:inset -2px -2px 0 rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.35);
+  }
+
+  .filters{ display:flex; gap:8px; margin-bottom:30px; flex-wrap:wrap; }
+  .chip{
+    padding:6px 14px;
+    border-radius:999px;
+    border:1.5px solid rgba(251,246,236,0.3);
+    background:transparent;
+    font-size:12px;
+    font-weight:500;
+    color:rgba(251,246,236,0.75);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip.active{ background:var(--cream); border-color:var(--cream); color:var(--ink); font-weight:600; }
+
+  .section-label{
+    font-family:'Baloo 2', sans-serif;
+    font-size:16px;
+    font-weight:600;
+    color:var(--cream);
+    margin:8px 0 16px;
+    opacity:0.85;
+  }
+
+  /* ---- Notes grid ---- */
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:26px 22px;
+    margin-bottom:10px;
+  }
+
+  .card{
+    position:relative;
+    background:var(--yellow);
+    border-radius:4px;
+    padding:20px 17px 16px;
+    box-shadow:0 10px 18px -6px rgba(0,0,0,0.35);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{ transform:translateY(-4px) rotate(0deg) !important; box-shadow:0 14px 22px -6px rgba(0,0,0,0.4); z-index:2; }
+  .card:nth-child(3n+1){ transform:rotate(-1.6deg); }
+  .card:nth-child(3n+2){ transform:rotate(1.1deg); }
+  .card:nth-child(3n){ transform:rotate(-0.4deg); }
+
+  .kat-Tugas-Biasa{ background:var(--yellow); }
+  .kat-Proyek{ background:var(--mint); }
+  .kat-UTS{ background:var(--orange); }
+  .kat-UAS{ background:var(--pink); }
+  .card.urgency-done{ background:var(--cream) !important; }
+
+  .pin{
+    position:absolute;
+    top:-9px; left:50%;
+    width:16px; height:16px;
+    margin-left:-8px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FF8A8A, #D6432F 70%);
+    box-shadow:0 3px 4px rgba(0,0,0,0.35);
+  }
+  .card.urgency-red .pin{ background:radial-gradient(circle at 35% 30%, #FF8A8A, #E23B3B 70%); }
+  .card.urgency-amber .pin{ background:radial-gradient(circle at 35% 30%, #FFD98A, #E3941F 70%); }
+  .card.urgency-green .pin{ background:radial-gradient(circle at 35% 30%, #9CF0C9, #1F9A5C 70%); }
+  .card.urgency-done .pin{ background:radial-gradient(circle at 35% 30%, #DCD5C2, #A69E86 70%); }
+
+  .card-title{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:17px;
+    margin:4px 0 8px;
+    color:var(--ink);
+    line-height:1.25;
+  }
+  .card.urgency-done .card-title{ text-decoration:line-through; opacity:0.55; }
+
+  .card-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:9px; }
+  .badge{
+    font-size:10.5px;
+    font-weight:600;
+    padding:3px 9px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.55);
+    color:var(--ink);
+  }
+
+  .card-desc{
+    font-size:12px;
+    color:var(--ink);
+    opacity:0.75;
+    margin:0 0 10px;
+    line-height:1.5;
+  }
+
+  .card-dates{
+    font-size:11.5px;
+    color:var(--ink);
+    opacity:0.8;
+    margin-bottom:6px;
+    line-height:1.6;
+  }
+  .card-dates b{ font-weight:700; }
+
+  .urgency-tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.6);
+    color:var(--ink);
+    margin-bottom:12px;
+  }
+
+  .card-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-top:1.5px dashed rgba(43,33,64,0.25);
+    padding-top:10px;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  select.status-select{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:11px;
+    font-weight:600;
+    padding:5px 7px;
+    border-radius:7px;
+    border:1.5px solid rgba(43,33,64,0.25);
+    background:rgba(255,255,255,0.55);
+    color:var(--ink);
+    cursor:pointer;
+    max-width:118px;
+  }
+  .card-actions{ display:flex; gap:10px; }
+  .icon-btn{
+    background:none;
+    border:none;
+    cursor:pointer;
+    color:var(--ink);
+    opacity:0.65;
+    font-size:11px;
+    font-weight:600;
+    padding:0;
+  }
+  .icon-btn:hover{ opacity:1; }
+
+  .empty{
+    text-align:center;
+    padding:70px 20px;
+    color:rgba(251,246,236,0.7);
+  }
+  .empty-pin{
+    width:20px; height:20px;
+    margin:0 auto 16px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FF8A8A, #D6432F 70%);
+    box-shadow:0 4px 6px rgba(0,0,0,0.35);
+  }
+  .empty h3{ font-family:'Baloo 2', sans-serif; font-size:19px; margin-bottom:6px; color:var(--cream); }
+  .empty p{ font-size:13px; margin:0; }
+
+  /* ---- Modal ---- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(20,14,40,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--cream);
+    width:100%;
+    max-width:460px;
+    border-radius:16px;
+    padding:26px 26px 22px;
+    max-height:88vh;
+    overflow-y:auto;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  }
+  .modal h2{ font-family:'Baloo 2', sans-serif; font-size:22px; margin:0 0 18px; font-weight:700; color:var(--ink); }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;
+    padding:9px 10px;
+    border:1.5px solid rgba(43,33,64,0.2);
+    border-radius:9px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none;
+    border-color:var(--orange);
+  }
+  .field textarea{ resize:vertical; min-height:60px; }
+  .field-row{ display:flex; gap:12px; }
+  .field-row .field{ flex:1; }
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:16px;
+  }
+  .btn-secondary{
+    background:none;
+    border:1.5px solid rgba(43,33,64,0.25);
+    color:var(--ink-soft);
+    padding:9px 16px;
+    border-radius:9px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .btn-primary{
+    font-family:'Baloo 2', sans-serif;
+    background:var(--ink);
+    color:var(--cream);
+    border:none;
+    padding:9px 20px;
+    border-radius:9px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  @media (max-width: 640px){
+    .wrap{ padding:26px 18px 50px; }
+    .header h1{ font-size:27px; }
+    .cards{ grid-template-columns:1fr 1fr; gap:18px 14px; }
+  }
+  @media (max-width: 420px){
+    .cards{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH SCREEN ================= -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-pin"></div>
+    <h2 id="auth-title">Masuk ke Agenda</h2>
+    <p class="sub" id="auth-sub">Data tugasmu tersimpan aman di akunmu sendiri.</p>
+    <div class="auth-error" id="auth-error"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="kamu@email.com">
+    </div>
+    <div class="field">
+      <label>Kata Sandi</label>
+      <input type="password" id="auth-password" placeholder="Minimal 6 karakter">
+    </div>
+    <button class="btn-auth" id="btn-auth-submit">Masuk</button>
+    <p class="auth-toggle">
+      <span id="auth-toggle-text">Belum punya akun?</span>
+      <button id="auth-toggle-btn">Daftar</button>
+    </p>
+  </div>
+</div>
+
+<!-- ================= APP SCREEN ================= -->
+<div id="app-screen">
+<div class="wrap">
+  <div class="header">
+    <div>
+      <h1>Agenda Tugas</h1>
+      <p class="today" id="today-date"></p>
+      <p class="user-email" id="user-email"></p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-logout" id="btn-logout">Keluar</button>
+      <button class="btn-add" id="btn-open-modal">+ Tugas Baru</button>
+    </div>
+  </div>
+
+  <div class="tape-row">
+    <button class="tape active" data-kat="Semua">Semua<span class="count" id="count-Semua"></span></button>
+    <button class="tape" data-kat="Tugas Biasa">Tugas Biasa<span class="count" id="count-Tugas Biasa"></span></button>
+    <button class="tape" data-kat="Proyek">Proyek<span class="count" id="count-Proyek"></span></button>
+    <button class="tape" data-kat="UTS">UTS<span class="count" id="count-UTS"></span></button>
+    <button class="tape" data-kat="UAS">UAS<span class="count" id="count-UAS"></span></button>
+  </div>
+
+  <div class="filters">
+    <div class="chip active" data-tipe="Semua">Semua Tipe</div>
+    <div class="chip" data-tipe="Individu">Individu</div>
+    <div class="chip" data-tipe="Kelompok">Kelompok</div>
+  </div>
+
+  <div id="active-section">
+    <p class="section-label">Belum selesai — diurutkan dari deadline terdekat</p>
+    <div class="cards" id="active-cards"></div>
+  </div>
+
+  <div id="done-section">
+    <p class="section-label">Sudah selesai</p>
+    <div class="cards" id="done-cards"></div>
+  </div>
+
+  <div class="empty" id="empty-state" style="display:none;">
+    <div class="empty-pin"></div>
+    <h3>Papan masih kosong</h3>
+    <p>Klik "+ Tugas Baru" untuk menempel tugas pertamamu.</p>
+  </div>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modal-title">Tugas Baru</h2>
+    <input type="hidden" id="f-id">
+    <div class="field">
+      <label>Judul Tugas</label>
+      <input type="text" id="f-judul" placeholder="cth. Laporan Praktikum Fisika">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Kategori</label>
+        <select id="f-kategori">
+          <option>Tugas Biasa</option>
+          <option>Proyek</option>
+          <option>UTS</option>
+          <option>UAS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tipe</label>
+        <select id="f-tipe">
+          <option>Individu</option>
+          <option>Kelompok</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Tanggal Diberikan</label>
+        <input type="date" id="f-tanggal-diberikan">
+      </div>
+      <div class="field">
+        <label>Deadline</label>
+        <input type="date" id="f-deadline">
+      </div>
+    </div>
+    <div class="field">
+      <label>Deskripsi (opsional)</label>
+      <textarea id="f-deskripsi" placeholder="Catatan tambahan tentang tugas ini..."></textarea>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="f-status">
+        <option>Belum Dikerjakan</option>
+        <option>Dikerjakan</option>
+        <option>Selesai</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-cancel">Batal</button>
+      <button class="btn-primary" id="btn-save">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
+  enableIndexedDbPersistence
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyACrM9DgS0-T5vIHpl6Ng9bb0xCGgBo5j8",
+  authDomain: "tugas-angel.firebaseapp.com",
+  projectId: "tugas-angel",
+  storageBucket: "tugas-angel.firebasestorage.app",
+  messagingSenderId: "121378064556",
+  appId: "1:121378064556:web:9ac2075fbdf81fa7293709",
+  measurementId: "G-0P3R43S2VC"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+enableIndexedDbPersistence(db).catch((err) => {
+  if(err.code === 'failed-precondition'){
+    console.warn('Mode offline hanya bisa aktif di satu tab browser. Tutup tab lain yang membuka halaman ini.');
+  } else if(err.code === 'unimplemented'){
+    console.warn('Browser ini tidak mendukung mode offline untuk Firestore.');
+  }
+});
+
+let currentUser = null;
+let unsubscribeTasks = null;
+let tasks = [];
+let currentKat = 'Semua';
+let currentTipe = 'Semua';
+let editingId = null;
+let isRegisterMode = false;
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const todayEl = $('#today-date');
+todayEl.textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+/* ---------------- AUTH ---------------- */
+
+function showAuthError(msg){
+  const el = $('#auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideAuthError(){ $('#auth-error').style.display = 'none'; }
+
+function mapAuthError(code){
+  const map = {
+    'auth/invalid-email':'Format email tidak valid.',
+    'auth/email-already-in-use':'Email ini sudah terdaftar. Coba masuk.',
+    'auth/weak-password':'Kata sandi minimal 6 karakter.',
+    'auth/user-not-found':'Akun belum terdaftar. Coba daftar dulu.',
+    'auth/wrong-password':'Kata sandi salah.',
+    'auth/invalid-credential':'Email atau kata sandi salah.',
+    'auth/missing-password':'Kata sandi wajib diisi.'
+  };
+  return map[code] || 'Terjadi kesalahan. Coba lagi.';
+}
+
+$('#auth-toggle-btn').onclick = () => {
+  isRegisterMode = !isRegisterMode;
+  hideAuthError();
+  if(isRegisterMode){
+    $('#auth-title').textContent = 'Buat Akun Baru';
+    $('#btn-auth-submit').textContent = 'Daftar';
+    $('#auth-toggle-text').textContent = 'Sudah punya akun?';
+    $('#auth-toggle-btn').textContent = 'Masuk';
+  } else {
+    $('#auth-title').textContent = 'Masuk ke Agenda';
+    $('#btn-auth-submit').textContent = 'Masuk';
+    $('#auth-toggle-text').textContent = 'Belum punya akun?';
+    $('#auth-toggle-btn').textContent = 'Daftar';
+  }
+};
+
+$('#btn-auth-submit').onclick = async () => {
+  hideAuthError();
+  const email = $('#auth-email').value.trim();
+  const password = $('#auth-password').value;
+  if(!email || !password){ showAuthError('Email dan kata sandi wajib diisi.'); return; }
+
+  const btn = $('#btn-auth-submit');
+  btn.disabled = true;
+  try{
+    if(isRegisterMode){
+      await createUserWithEmailAndPassword(auth, email, password);
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+    }
+  }catch(err){
+    showAuthError(mapAuthError(err.code));
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+$('#btn-logout').onclick = async () => {
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  if(user){
+    $('#auth-screen').style.display = 'none';
+    $('#app-screen').style.display = 'block';
+    $('#user-email').textContent = user.email;
+    $('#auth-email').value = '';
+    $('#auth-password').value = '';
+    listenToTasks();
+  } else {
+    $('#auth-screen').style.display = 'flex';
+    $('#app-screen').style.display = 'none';
+    if(unsubscribeTasks){ unsubscribeTasks(); unsubscribeTasks = null; }
+    tasks = [];
+  }
+});
+
+/* ---------------- TASKS (Firestore) ---------------- */
+
+function tasksCol(){
+  return collection(db, 'users', currentUser.uid, 'tasks');
+}
+
+function listenToTasks(){
+  if(unsubscribeTasks) unsubscribeTasks();
+  unsubscribeTasks = onSnapshot(tasksCol(), (snap) => {
+    tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+  }, (err) => {
+    console.error('Gagal memuat data', err);
+  });
+}
+
+async function createTask(data){
+  await addDoc(tasksCol(), data);
+}
+async function updateTask(id, data){
+  await updateDoc(doc(tasksCol(), id), data);
+}
+async function deleteTask(id){
+  await deleteDoc(doc(tasksCol(), id));
+}
+
+/* ---------------- HELPERS ---------------- */
+
+function uid(){ return 't' + Date.now() + Math.random().toString(36).slice(2,7); }
+function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
+function daysUntil(dateStr){
+  const today = startOfDay(new Date());
+  const target = startOfDay(new Date(dateStr));
+  return Math.round((target - today) / 86400000);
+}
+function urgencyClass(task){
+  if(task.status === 'Selesai') return 'urgency-done';
+  const d = daysUntil(task.deadline);
+  if(d <= 1) return 'urgency-red';
+  if(d <= 3) return 'urgency-amber';
+  return 'urgency-green';
+}
+function urgencyLabel(task){
+  if(task.status === 'Selesai') return 'Selesai';
+  const d = daysUntil(task.deadline);
+  if(d < 0) return `Lewat ${Math.abs(d)} hari`;
+  if(d === 0) return 'Deadline hari ini';
+  if(d === 1) return 'Besok deadline';
+  return `${d} hari lagi`;
+}
+function fmtDate(dateStr){
+  if(!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+}
+function katClass(kat){ return 'kat-' + kat.replace(/\s+/g, '-'); }
+function escapeHTML(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------------- RENDER ---------------- */
+
+function render(){
+  const counts = { 'Semua': tasks.length, 'Tugas Biasa':0, 'Proyek':0, 'UTS':0, 'UAS':0 };
+  tasks.forEach(t => { if(counts[t.kategori] !== undefined) counts[t.kategori]++; });
+  Object.keys(counts).forEach(k => {
+    const el = document.getElementById('count-' + k);
+    if(el) el.textContent = ' · ' + counts[k];
+  });
+
+  let filtered = tasks.filter(t => currentKat === 'Semua' || t.kategori === currentKat);
+  filtered = filtered.filter(t => currentTipe === 'Semua' || t.tipe === currentTipe);
+
+  const active = filtered.filter(t => t.status !== 'Selesai').sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
+  const done = filtered.filter(t => t.status === 'Selesai').sort((a,b) => new Date(b.deadline) - new Date(a.deadline));
+
+  $('#active-cards').innerHTML = active.map(cardHTML).join('');
+  $('#done-cards').innerHTML = done.map(cardHTML).join('');
+
+  $('#active-section').style.display = active.length ? '' : 'none';
+  $('#done-section').style.display = done.length ? '' : 'none';
+  $('#empty-state').style.display = (active.length === 0 && done.length === 0) ? '' : 'none';
+
+  attachCardEvents();
+}
+
+function cardHTML(t){
+  const uc = urgencyClass(t);
+  const kc = katClass(t.kategori);
+  const desc = t.deskripsi ? `<p class="card-desc">${escapeHTML(t.deskripsi)}</p>` : '';
+  return `
+  <div class="card ${uc} ${kc}" data-id="${t.id}">
+    <div class="pin"></div>
+    <div class="card-badges">
+      <span class="badge">${t.kategori}</span>
+      <span class="badge">${t.tipe}</span>
+    </div>
+    <h3 class="card-title">${escapeHTML(t.judul)}</h3>
+    ${desc}
+    <div class="card-dates">
+      Diberikan: <b>${fmtDate(t.tanggalDiberikan)}</b><br>
+      Deadline: <b>${fmtDate(t.deadline)}</b>
+    </div>
+    <span class="urgency-tag">${urgencyLabel(t)}</span>
+    <div class="card-footer">
+      <select class="status-select" data-id="${t.id}">
+        <option ${t.status==='Belum Dikerjakan'?'selected':''}>Belum Dikerjakan</option>
+        <option ${t.status==='Dikerjakan'?'selected':''}>Dikerjakan</option>
+        <option ${t.status==='Selesai'?'selected':''}>Selesai</option>
+      </select>
+      <div class="card-actions">
+        <button class="icon-btn" data-edit="${t.id}">Ubah</button>
+        <button class="icon-btn" data-del="${t.id}">Hapus</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachCardEvents(){
+  $$('.status-select').forEach(sel => {
+    sel.onchange = async (e) => {
+      const id = e.target.dataset.id;
+      await updateTask(id, { status: e.target.value });
+    };
+  });
+  $$('[data-edit]').forEach(btn => {
+    btn.onclick = () => openModal(btn.dataset.edit);
+  });
+  $$('[data-del]').forEach(btn => {
+    btn.onclick = async () => {
+      if(confirm('Hapus tugas ini?')){
+        await deleteTask(btn.dataset.del);
+      }
+    };
+  });
+}
+
+$$('.tape').forEach(tab => {
+  tab.onclick = () => {
+    $$('.tape').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentKat = tab.dataset.kat;
+    render();
+  };
+});
+
+$$('.chip').forEach(chip => {
+  chip.onclick = () => {
+    $$('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentTipe = chip.dataset.tipe;
+    render();
+  };
+});
+
+/* ---------------- MODAL ---------------- */
+
+function openModal(id){
+  editingId = id || null;
+  if(id){
+    const t = tasks.find(x => x.id === id);
+    $('#modal-title').textContent = 'Ubah Tugas';
+    $('#f-id').value = t.id;
+    $('#f-judul').value = t.judul;
+    $('#f-kategori').value = t.kategori;
+    $('#f-tipe').value = t.tipe;
+    $('#f-tanggal-diberikan').value = t.tanggalDiberikan;
+    $('#f-deadline').value = t.deadline;
+    $('#f-deskripsi').value = t.deskripsi || '';
+    $('#f-status').value = t.status;
+  } else {
+    $('#modal-title').textContent = 'Tugas Baru';
+    $('#f-id').value = '';
+    $('#f-judul').value = '';
+    $('#f-kategori').value = currentKat !== 'Semua' ? currentKat : 'Tugas Biasa';
+    $('#f-tipe').value = 'Individu';
+    const todayStr = new Date().toISOString().slice(0,10);
+    $('#f-tanggal-diberikan').value = todayStr;
+    $('#f-deadline').value = todayStr;
+    $('#f-deskripsi').value = '';
+    $('#f-status').value = 'Belum Dikerjakan';
+  }
+  $('#overlay').classList.add('open');
+}
+function closeModal(){
+  $('#overlay').classList.remove('open');
+  editingId = null;
+}
+
+$('#btn-open-modal').onclick = () => openModal(null);
+$('#btn-cancel').onclick = closeModal;
+$('#overlay').onclick = (e) => { if(e.target.id === 'overlay') closeModal(); };
+
+$('#btn-save').onclick = async () => {
+  const judul = $('#f-judul').value.trim();
+  const deadline = $('#f-deadline').value;
+  const tanggalDiberikan = $('#f-tanggal-diberikan').value;
+  if(!judul){ alert('Judul tugas wajib diisi.'); return; }
+  if(!deadline){ alert('Deadline wajib diisi.'); return; }
+
+  const id = $('#f-id').value;
+  const data = {
+    judul,
+    kategori: $('#f-kategori').value,
+    tipe: $('#f-tipe').value,
+    tanggalDiberikan,
+    deadline,
+    deskripsi: $('#f-deskripsi').value.trim(),
+    status: $('#f-status').value
+  };
+
+  closeModal();
+  try{
+    if(id){
+      await updateTask(id, data);
+    } else {
+      await createTask(data);
+    }
+  }catch(err){
+    alert('Gagal menyimpan tugas. Coba lagi.');
+    console.error(err);
+  }
+};
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((err) => {
+      console.warn('Service worker gagal didaftarkan', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
