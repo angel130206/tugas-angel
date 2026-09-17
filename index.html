@@ -460,9 +460,23 @@
   }
 
   @media (max-width: 640px){
-    .wrap{ padding:26px 18px 50px; }
+    .wrap{ padding:22px 0 50px 16px; }
+    .header{ padding-right:16px; }
     .header h1{ font-size:27px; }
-    .cards{ grid-template-columns:1fr 1fr; gap:18px 14px; }
+
+    .tape-row, .filters{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      overflow-y:visible;
+      padding:6px 16px 10px 0;
+      margin-right:-16px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .tape-row::-webkit-scrollbar, .filters::-webkit-scrollbar{ display:none; }
+    .tape, .chip{ flex-shrink:0; }
+
+    .cards{ grid-template-columns:1fr 1fr; gap:18px 14px; padding-right:16px; }
   }
   @media (max-width: 420px){
     .cards{ grid-template-columns:1fr; }
