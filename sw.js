@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agenda-tugas-v2';
+const CACHE_NAME = 'agenda-tugas-v1';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
@@ -27,13 +27,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first: always try to get the latest file. Only fall back to the
-  // cached copy if there's no internet connection.
   event.respondWith(
-    fetch(event.request).then((response) => {
-      const clone = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-      return response;
-    }).catch(() => caches.match(event.request))
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      }).catch(() => cached);
+    })
   );
 });
