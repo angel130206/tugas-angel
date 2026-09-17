@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Agenda Tugas</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#3B2E67">
@@ -43,7 +43,12 @@
   }
   h1,h2,h3,.playful{font-family:'Baloo 2', sans-serif;}
 
-  .wrap{ max-width:1180px; margin:0 auto; padding:38px 30px 70px; }
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:38px 30px 70px;
+    padding-top:max(38px, env(safe-area-inset-top, 38px));
+  }
 
   /* ---- Auth screen ---- */
   #auth-screen{
@@ -460,7 +465,10 @@
   }
 
   @media (max-width: 640px){
-    .wrap{ padding:22px 0 50px 16px; }
+    .wrap{
+      padding:22px 0 50px 16px;
+      padding-top:max(28px, env(safe-area-inset-top, 28px));
+    }
     .header{ padding-right:16px; }
     .header h1{ font-size:27px; }
 
